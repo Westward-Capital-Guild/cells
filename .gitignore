@@ -44,3 +44,7 @@ frontend/front-srv/*
 install*.yaml
 
 .claude
+
+/deploy/denox/.env.stage
+/deploy/denox/data/
+/customer-file-platform-cells*.tar.gz

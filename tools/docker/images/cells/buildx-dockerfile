@@ -57,11 +57,13 @@ ARG GIT_REV
 ARG BUILD_STAMP
 ARG TARGETARCH
 ARG DOCKER_ENTRYPOINT_SRC_DIR=.
+ARG SOURCE_URL=https://github.com/pydio/cells
+ARG IMAGE_VENDOR=Pydio
 
 LABEL org.opencontainers.image.title="Pydio Cells" \
       org.opencontainers.image.description="Pydio Cells — enterprise file sharing and collaboration platform" \
-      org.opencontainers.image.vendor="Pydio" \
-      org.opencontainers.image.source="https://github.com/pydio/cells" \
+      org.opencontainers.image.vendor="${IMAGE_VENDOR}" \
+      org.opencontainers.image.source="${SOURCE_URL}" \
       org.opencontainers.image.licenses="AGPL-3.0-only" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${GIT_REV}" \
