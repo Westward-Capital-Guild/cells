@@ -22,4 +22,4 @@ set_config displayNameClaim '"name"'
 set_config source '"denox-passport"'
 set_config flowTTL '"5m"'
 
-compose restart cells
+compose restart cells </dev/null
