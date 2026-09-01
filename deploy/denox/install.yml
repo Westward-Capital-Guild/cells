@@ -1,6 +1,0 @@
-# Non-secret bootstrap configuration. Values are injected from the runtime env.
-frontendlogin: admin
-frontendpassword: {$CELLS_ADMIN_PWD}
-
-dbconnectiontype: manual
-dbmanualdsn: "postgres://cells:{$CELLS_DB_PASSWORD}@postgres:5432/cells?sslmode=disable&prefix={{.Meta.prefix}}&policies={{.Meta.policies}}&singular={{.Meta.singular}}"

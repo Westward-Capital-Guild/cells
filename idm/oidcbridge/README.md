@@ -31,6 +31,20 @@ services:
     groupsClaim: groups
     source: customer-oidc
     flowTTL: 5m
+    passwordLoginEnabled: false
+    loginURL: /auth/oidc/login
+    loginButtonLabel: Continue with single sign-on
+    logoutURL: https://id.example.com/application-signed-out
 ```
 
 For isolated PoC execution, the client secret may instead be supplied through `CELLS_CUSTOMER_OIDC_CLIENT_SECRET`. Do not commit it or place it in non-secret configuration. HTTP issuer and redirect URLs are accepted only for loopback synthetic test environments; other endpoints must use HTTPS.
+
+`passwordLoginEnabled` defaults to `true` for upstream compatibility. When it is
+set to `false` on an enabled adapter, the Cells login dialog renders only the
+configured OIDC button and the server rejects browser `credentials` requests
+before password verification. WebDAV PAT authentication is unchanged.
+
+When `logoutURL` is set, Cells clears its own application session first and then
+navigates to that URL. The target is an application signed-out page; upstream
+identity-provider global logout remains a separate concern. Navigation URLs
+must be root-relative, HTTPS, or HTTP on a loopback test host.

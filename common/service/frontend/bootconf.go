@@ -58,6 +58,14 @@ type CustomWording struct {
 	LoginLegend string `json:"loginLegend"`
 }
 
+type ExternalIdentityConf struct {
+	Enabled              bool   `json:"enabled"`
+	PasswordLoginEnabled bool   `json:"passwordLoginEnabled"`
+	LoginURL             string `json:"loginURL"`
+	LoginButtonLabel     string `json:"loginButtonLabel"`
+	LogoutURL            string `json:"logoutURL,omitempty"`
+}
+
 type BootConf struct {
 	AjxpResourcesFolder          string `json:"ajxpResourcesFolder"`
 	ENDPOINT_REST_API            string
@@ -83,6 +91,7 @@ type BootConf struct {
 	AjxpImagesCommon             bool                   `json:"ajxpImagesCommon"`
 	ValidMailer                  bool                   `json:"validMailer"`
 	Backend                      BackendConf            `json:"backend"`
+	ExternalIdentity             *ExternalIdentityConf  `json:"externalIdentity,omitempty"`
 	Other                        map[string]interface{} `json:"other,omitempty"`
 }
 

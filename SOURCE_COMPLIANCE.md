@@ -12,7 +12,7 @@ Every deployable release must satisfy all of the following:
 6. Do not publish secrets, customer configuration, customer identities, or customer files as source code.
 7. Include these obligations in the customer operations handover because the customer becomes the network operator after delivery.
 
-The existing About dialog loads `frontend/assets/gui.ajax/credits.md`, which contains the source offer for `oidc-poc-v0.1.0`. Every later release must update that file to its own immutable source tag before building. A build whose About link does not resolve to its exact source is not releasable.
+The existing About dialog loads `frontend/assets/gui.ajax/credits.md`, which contains the source offer for the current immutable release tag. Every later release must update that file to its own immutable source tag before building. A build whose About link does not resolve to its exact source is not releasable.
 
 This first tag remains a development PoC and is not approved for customer production deployment because runtime identity acceptance is incomplete.
 
