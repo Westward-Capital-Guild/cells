@@ -11,6 +11,7 @@ chmod 0755 "$test_dir/configure-oidc.sh"
 
 cat > "$test_dir/bin/docker" <<'DOCKER'
 #!/bin/sh
+printf '%s\n' "$*" >> "$TEST_LOG"
 case " $* " in
   *" exec -T "*) exit 0 ;;
   *" restart cells "*) cat >/dev/null; exit 0 ;;
@@ -19,10 +20,14 @@ esac
 DOCKER
 chmod 0755 "$test_dir/bin/docker"
 
-PATH="$test_dir/bin:$PATH" TEST_DIR="$test_dir" sh -s <<'REMOTE'
+PATH="$test_dir/bin:$PATH" TEST_DIR="$test_dir" TEST_LOG="$test_dir/docker.log" sh -s <<'REMOTE'
 cd "$TEST_DIR"
 ./configure-oidc.sh
 printf '%s\n' survived > after-configure
 REMOTE
 
 test "$(cat "$test_dir/after-configure")" = survived
+grep -Fq 'pydio.web.customer-oidc issuerURL https://passport.denox-corp.com' "$test_dir/docker.log"
+grep -Fq 'pydio.web.customer-oidc scopes openid profile email' "$test_dir/docker.log"
+grep -Fq 'pydio.web.customer-oidc flowTTL 5m' "$test_dir/docker.log"
+! grep -Eq 'customer-oidc .*"' "$test_dir/docker.log"
