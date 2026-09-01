@@ -12,7 +12,7 @@ This deployment is an unofficial modified Pydio Cells Home build for the Denox c
 - Image: `customer-file-platform-cells:oidc-poc-v0.2.0`
 - Source tag: `denox-poc-v0.2.0`
 - Database: `postgres:16.10-alpine`
-- Storage: a dedicated encrypted Aliyun General-purpose NAS filesystem, mounted with NFSv4.0
+- Storage: `/customer-file-platform` on the existing encrypted Denox General-purpose NAS filesystem, mounted with NFSv4.0
 
 ## Secret Contract
 
@@ -39,6 +39,8 @@ docker compose --env-file .env.stage -f compose.yaml -f docker-compose.denox-ing
 
 The NAS must already contain `.cells-storage-identity` whose exact one-line value matches `CELLS_NAS_SENTINEL`. The NFS-backed Docker volume fails container creation when the mount is unavailable; `cells-entrypoint.sh` additionally rejects a wrong filesystem or sentinel.
 
+This staging deployment intentionally reuses the customer NAS and ECS system disk. The file platform has an independent NAS directory, identity sentinel, and enforcement quota, but the NAS access group is still a filesystem-level boundary shared with the existing RAG workload. PostgreSQL and Cells configuration are stored on the existing unencrypted ECS system disk. These are accepted staging constraints, not evidence that the production storage-encryption or workload-isolation gates passed.
+
 ## Stateful Guard
 
 Before and after a deployment, verify:
@@ -48,6 +50,7 @@ Before and after a deployment, verify:
 - Cells uses `/opt/customer-file-platform/data/cells` for configuration and the NFS volume for `/var/cells/data`;
 - the application and database containers are healthy;
 - a known synthetic file remains visible through both Cells and an independent NFS client.
+- `/ig-rag` counts and metadata are unchanged by file-platform deployment operations.
 
 ## Rollback
 
