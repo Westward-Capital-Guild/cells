@@ -1,3 +1,11 @@
+#### Modified Distribution Source
+
+This is an unofficial modified build maintained by Westward Capital Guild, not an official Pydio release. It is licensed under the GNU Affero General Public License v3 or later.
+
+- [Corresponding Source for `oidc-poc-v0.1.0`](https://github.com/Westward-Capital-Guild/cells/tree/oidc-poc-v0.1.0)
+- [Modification notices](https://github.com/Westward-Capital-Guild/cells/blob/oidc-poc-v0.1.0/MODIFICATIONS.md)
+- [GNU AGPL license](https://github.com/Westward-Capital-Guild/cells/blob/oidc-poc-v0.1.0/LICENSE)
+
 #### Third Party Library
 
 ##### JavaScript

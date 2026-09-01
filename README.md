@@ -1,5 +1,7 @@
 <img src="https://github.com/pydio/cells/wiki/images/PydioCellsColor.png" width="400" />
 
+> **Unofficial modified fork.** This repository is maintained by Westward Capital Guild and is not an official Pydio release. The current customization baseline is Pydio Cells Home `v5.0.2` at commit `1fc874469656deec2677ff6d2f487cf5c31dc3fd`. See [UPSTREAM.md](UPSTREAM.md), [MODIFICATIONS.md](MODIFICATIONS.md), and [SOURCE_COMPLIANCE.md](SOURCE_COMPLIANCE.md).
+
 [Homepage](https://pydio.com/) | [Dev Guide](https://pydio.com/en/docs/developer-guide) | [GitHub-Repository](https://github.com/pydio/cells) |
 [Issue-Tracker](https://github.com/pydio/cells/issues)
 
@@ -109,3 +111,4 @@ See the list of [contributors](https://github.com/pydio/cells/graphs/contributor
 
 This project is licensed under the AGPLv3 License - see the [LICENSE](LICENSE) file for more details.
 
+The customer OIDC adapter and all other modifications in this fork are distributed under the same AGPLv3-or-later terms. Deployments must offer their remote users the Corresponding Source for the exact running version; a moving repository branch is not a sufficient version reference.
