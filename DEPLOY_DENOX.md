@@ -59,3 +59,16 @@ Keep the previous image tag and deployment directory snapshot. Restore the previ
 ## Acceptance Boundary
 
 `deploy/denox/smoke.sh` proves public routing, OIDC initiation with PKCE, invalid callback rejection, and anonymous WebDAV denial. Deployment acceptance additionally requires a real Passport user login, JIT user reuse, a PAT-authenticated WebDAV write/read/delete round trip, exact source-link inspection, and state survival after container restart.
+
+## Live Staging Record (2026-09-01)
+
+- Target: Denox staging ECS `i-2zee44uf0r83fioe2n5x` in `cn-beijing`; no ECS, NAS, or bandwidth resource was created or resized for this deployment.
+- Running source: revision `80e25d6300df6a9a8546647543c7984a9760810c`, immutable tag `denox-poc-v0.2.5`, image `customer-file-platform-cells:oidc-poc-v0.2.5` with image ID `sha256:d7534d3f71af092dfe439dd276012e776430e273d9916794c97fe2866e5ec989`.
+- Public smoke, repeated after container restart: `bootconf=200`, OIDC redirect accepted, PKCE `S256`, invalid callback `400`, anonymous WebDAV `401`.
+- Passport service-principal E2E, repeated twice: authorization-code/PKCE completed, the Cells session exchange and refresh returned `200`, and the same `issuer + sub` reused one Cells user (`1/1/1`, stable UUID). This is integration evidence only; a human Feishu browser login is `NOT RUN`.
+- A short-lived administrator PAT completed a real WebDAV `PROPFIND`/`PUT`/`GET`/`DELETE` round trip with `207/201/200/204`, matching payload, and post-delete `404`. This does not prove the OIDC-user PAT creation, independent revocation, or ACL cases.
+- Both containers were healthy after restart, the exact source label matched the revision above, the NFS sentinel remained valid, and `.env.stage` remained mode `0600`. The deployment pre/post snapshot left `/ig-rag` unchanged at `3:4096:1788159479`.
+- A later read-only check at `2026-09-01T20:35:44+08:00` observed `/ig-rag` metadata `8:4096:1788159479`. External writers are uncontrolled, so this change is not attributed to Cells; the same check proved the Cells NFS volume device remained exactly `:/customer-file-platform`.
+- The requested NAS quota is 100 GiB and 500,000 files with all-user enforcement. Its last observed state was `Initializing`; current NAS API calls return `User.Disabled`, so quota enforcement is not verified and must not be reported as active.
+
+This record establishes a healthy Denox staging deployment on reused ECS and NAS resources. It does not pass the overall customer-file-platform PoC: human login, ACLs, external-write resync, scale, backup/recovery, logging/security, and customer handoff remain outside this deployment smoke.
