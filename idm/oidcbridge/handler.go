@@ -6,6 +6,10 @@ package oidcbridge
 import (
 	"context"
 	"net/http"
+
+	"go.uber.org/zap"
+
+	"github.com/pydio/cells/v5/common/telemetry/log"
 )
 
 type OIDCClient interface {
@@ -78,11 +82,13 @@ func (h *Handler) callback(w http.ResponseWriter, r *http.Request) {
 	}
 	identity, err := h.client.ExchangeAndVerify(r.Context(), code, flow.Nonce, flow.PKCEVerifier)
 	if err != nil {
+		log.Logger(r.Context()).Warn("Customer OIDC verification failed", zap.Error(err))
 		http.Error(w, "OIDC login verification failed", http.StatusUnauthorized)
 		return
 	}
 	redirectURL, err := h.completer.Complete(r.Context(), identity)
 	if err != nil {
+		log.Logger(r.Context()).Warn("Customer OIDC Cells login completion failed", zap.Error(err))
 		http.Error(w, "could not complete Cells login", http.StatusUnauthorized)
 		return
 	}

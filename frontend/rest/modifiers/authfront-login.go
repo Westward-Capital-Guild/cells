@@ -29,6 +29,8 @@ import (
 
 	"github.com/pydio/cells/v5/common/auth"
 	"github.com/pydio/cells/v5/common/auth/hydra"
+	"github.com/pydio/cells/v5/common/config"
+	"github.com/pydio/cells/v5/common/errors"
 	pauth "github.com/pydio/cells/v5/common/proto/auth"
 	"github.com/pydio/cells/v5/common/proto/rest"
 	"github.com/pydio/cells/v5/common/service/frontend"
@@ -39,6 +41,10 @@ func LoginPasswordAuth(middleware frontend.AuthMiddleware) frontend.AuthMiddlewa
 	return func(req *restful.Request, rsp *restful.Response, in *frontend.FrontSessionWithRuntimeCtx, out *rest.FrontSessionResponse, session *sessions.Session) error {
 		if a, ok := in.AuthInfo["type"]; !ok || a != "credentials" { // Ignore this middleware
 			return middleware(req, rsp, in, out, session)
+		}
+		customerOIDC := config.Get(req.Request.Context(), "services", "pydio.web.customer-oidc")
+		if customerOIDC.Val("enabled").Bool() && !customerOIDC.Val("passwordLoginEnabled").Default(true).Bool() {
+			return errors.WithMessage(errors.LoginFailed, "password login is disabled; use the configured identity provider")
 		}
 
 		username := in.AuthInfo["login"]

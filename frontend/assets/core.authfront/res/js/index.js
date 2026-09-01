@@ -26,6 +26,7 @@ import {muiThemeable, getMuiTheme, darkBaseTheme} from 'material-ui/styles';
 import {CircularProgress, TextField, MuiThemeProvider, FlatButton, Checkbox, FontIcon, MenuItem, IconButton, IconMenu} from 'material-ui';
 import {TokenServiceApi, RestResetPasswordRequest} from 'cells-sdk';
 import { resolveForgotPasswordNavigation } from './forgotPasswordLink';
+import {isExternalIdentityOnly, logoutApplication, normalizeExternalIdentityConfig} from './externalIdentity';
 const {ValidPassword} = Pydio.requireLib('form')
 const {Loader} = Pydio.requireLib('boot')
 
@@ -142,6 +143,11 @@ let LoginPasswordDialog = createReactClass({
     },
 
     submit(){
+        const externalIdentity = normalizeExternalIdentityConfig(this.state.globalParameters.get('externalIdentity'));
+        if (isExternalIdentityOnly(externalIdentity)) {
+            window.location.assign(externalIdentity.loginURL);
+            return;
+        }
         let client = PydioApi.getRestClient();
         this.setState({loading: true}, () => {this._updater(this.makeButtons())})
         this.postLoginData(client).then(() => {
@@ -182,6 +188,20 @@ let LoginPasswordDialog = createReactClass({
     makeButtons() {
         const pydio = Pydio.getInstance();
         const {globalParameters, authParameters, loading} = this.state;
+        const externalIdentity = normalizeExternalIdentityConfig(globalParameters.get('externalIdentity'));
+        if (isExternalIdentityOnly(externalIdentity)) {
+            return [(
+                <FlatButton
+                    id="dialog-oidc-login-submit"
+                    primary={true}
+                    labelStyle={{color:'white'}}
+                    key="external-identity"
+                    label={externalIdentity.loginButtonLabel}
+                    onClick={() => window.location.assign(externalIdentity.loginURL)}
+                    className={"loginButtonSubmit"}
+                />
+            )];
+        }
         const passwordOnly = globalParameters.get('PASSWORD_AUTH_ONLY');
         const secureLoginForm = passwordOnly || authParameters.get('SECURE_LOGIN_FORM');
 
@@ -227,9 +247,11 @@ let LoginPasswordDialog = createReactClass({
     },
 
     render(){
+        const externalIdentity = normalizeExternalIdentityConfig(this.state.globalParameters.get('externalIdentity'));
+        const externalIdentityOnly = isExternalIdentityOnly(externalIdentity);
         const passwordOnly = this.state.globalParameters.get('PASSWORD_AUTH_ONLY');
         const secureLoginForm = passwordOnly || this.state.authParameters.get('SECURE_LOGIN_FORM');
-        const forgotPasswordLink = this.state.authParameters.get('ENABLE_FORGOT_PASSWORD') && !passwordOnly;
+        const forgotPasswordLink = this.state.authParameters.get('ENABLE_FORGOT_PASSWORD') && !passwordOnly && !externalIdentityOnly;
         const pydio = Pydio.getInstance()
 
         let errorMessage;
@@ -302,7 +324,7 @@ let LoginPasswordDialog = createReactClass({
                 {loginLegend && <div className={"loginLegend"}>{loginLegend}</div>}
                 {errorMessage}
                 {additionalComponentsTop}
-                <form autoComplete={secureLoginForm?"off":"on"} className={"loginForm"}>
+                {!externalIdentityOnly && <form autoComplete={secureLoginForm?"off":"on"} className={"loginForm"}>
                     {!passwordOnly && <TextField
                         className="blurDialogTextField loginInputLogin"
                         autoComplete={secureLoginForm?"off":"on"}
@@ -328,7 +350,7 @@ let LoginPasswordDialog = createReactClass({
                         fullWidth={true}
                         autoFocus={passwordOnly}
                     />
-                </form>
+                </form>}
                 {additionalComponentsBottom}
                 {forgotLink}
             </DarkThemeContainer>
@@ -369,9 +391,14 @@ class Callbacks{
         }
         const url = pydio.getFrontendUrl();
         const target = `${url.protocol}//${url.host}/logout`;
+        const externalIdentity = normalizeExternalIdentityConfig(pydio.Parameters.get('externalIdentity'));
 
-        PydioApi.getRestClient().sessionLogout()
-            .then(() => pydio.loadXmlRegistry(null, null, null))
+        logoutApplication(
+            externalIdentity,
+            () => PydioApi.getRestClient().sessionLogout(),
+            () => pydio.loadXmlRegistry(null, null, null),
+            (logoutURL) => window.location.assign(logoutURL),
+        )
             .catch((e) => {
                 window.location.href = target;
             });
