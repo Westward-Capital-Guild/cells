@@ -20,7 +20,7 @@ services:
       - default
 
   cells:
-    image: customer-file-platform-cells:oidc-poc-v0.2.4
+    image: customer-file-platform-cells:oidc-poc-v0.2.5
     container_name: customer-file-platform-cells
     restart: unless-stopped
     entrypoint: ["/opt/denox/bin/cells-entrypoint.sh"]

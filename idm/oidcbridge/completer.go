@@ -10,6 +10,8 @@ import (
 
 	"github.com/pydio/cells/v5/common/auth"
 	"github.com/pydio/cells/v5/common/auth/claim"
+	"github.com/pydio/cells/v5/common/auth/hydra"
+	"github.com/pydio/cells/v5/common/config"
 	pauth "github.com/pydio/cells/v5/common/proto/auth"
 	"github.com/pydio/cells/v5/idm/oauth"
 )
@@ -21,7 +23,11 @@ type CodeIssuer interface {
 type defaultCodeIssuer struct{}
 
 func (defaultCodeIssuer) Issue(ctx context.Context, claims claim.Claims) (*pauth.GetLoginResponse, string, error) {
-	return auth.DefaultJWTVerifier().LoginChallengeCode(ctx, claims)
+	login, err := hydra.CreateLogin(ctx, config.DefaultOAuthClientID, []string{"openid", "profile", "offline"}, nil)
+	if err != nil {
+		return nil, "", fmt.Errorf("create Cells login flow: %w", err)
+	}
+	return auth.DefaultJWTVerifier().LoginChallengeCode(ctx, claims, auth.SetChallenge(login.GetChallenge()))
 }
 
 type CellsCompleter struct {
