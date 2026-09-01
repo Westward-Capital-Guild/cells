@@ -9,8 +9,8 @@ This deployment is an unofficial modified Pydio Cells Home build for the Denox c
 - OIDC client: `customer-file-platform`
 - OIDC callback: `https://files.tools.denox-corp.com/auth/oidc/callback`
 - Runtime directory: `/opt/customer-file-platform`
-- Image: `customer-file-platform-cells:oidc-poc-v0.2.0`
-- Source tag: `denox-poc-v0.2.0`
+- Image: `customer-file-platform-cells:oidc-poc-v0.2.1`
+- Source tag: `denox-poc-v0.2.1`
 - Database: `postgres:16.10-alpine`
 - Storage: `/customer-file-platform` on the existing encrypted Denox General-purpose NAS filesystem, mounted with NFSv4.0
 
@@ -24,7 +24,7 @@ Build on the control machine and ship the image archive. Do not build on the sta
 
 ```bash
 deploy/denox/build-image.sh
-docker save customer-file-platform-cells:oidc-poc-v0.2.0 | gzip > customer-file-platform-cells.tar.gz
+docker save customer-file-platform-cells:oidc-poc-v0.2.1 | gzip > customer-file-platform-cells.tar.gz
 ```
 
 On the staging ECS, install the deployment files under `/opt/customer-file-platform`, load the image, and run:
