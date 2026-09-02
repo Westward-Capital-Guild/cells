@@ -13,7 +13,6 @@ import (
 	"github.com/pydio/cells/v5/common/auth/hydra"
 	"github.com/pydio/cells/v5/common/config"
 	pauth "github.com/pydio/cells/v5/common/proto/auth"
-	"github.com/pydio/cells/v5/idm/oauth"
 )
 
 type CodeIssuer interface {
@@ -31,16 +30,17 @@ func (defaultCodeIssuer) Issue(ctx context.Context, claims claim.Claims) (*pauth
 }
 
 type CellsCompleter struct {
-	users  UserSyncer
-	codes  CodeIssuer
-	source string
+	users       UserSyncer
+	codes       CodeIssuer
+	source      string
+	callbackURL string
 }
 
-func NewCellsCompleter(users UserSyncer, codes CodeIssuer, source string) *CellsCompleter {
+func NewCellsCompleter(users UserSyncer, codes CodeIssuer, source, callbackURL string) *CellsCompleter {
 	if codes == nil {
 		codes = defaultCodeIssuer{}
 	}
-	return &CellsCompleter{users: users, codes: codes, source: source}
+	return &CellsCompleter{users: users, codes: codes, source: source, callbackURL: callbackURL}
 }
 
 func (c *CellsCompleter) Complete(ctx context.Context, identity ExternalIdentity) (string, error) {
@@ -62,11 +62,7 @@ func (c *CellsCompleter) Complete(ctx context.Context, identity ExternalIdentity
 	if err != nil {
 		return "", fmt.Errorf("parse Cells login request URL: %w", err)
 	}
-	redirectURI, err := oauth.GetRedirectURIFromRequestValues(requestURL.Query())
-	if err != nil {
-		return "", fmt.Errorf("resolve Cells callback URL: %w", err)
-	}
-	target, err := url.Parse(redirectURI)
+	target, err := url.Parse(c.callbackURL)
 	if err != nil {
 		return "", fmt.Errorf("parse Cells callback URL: %w", err)
 	}
