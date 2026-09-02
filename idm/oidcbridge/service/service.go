@@ -55,7 +55,12 @@ func init() {
 					return err
 				}
 				users := oidcbridge.NewUserSynchronizer(oidcbridge.CellsDirectory{})
-				completer := oidcbridge.NewCellsCompleter(users, nil, cfg.Source)
+				completer := oidcbridge.NewCellsCompleter(
+					users,
+					nil,
+					cfg.Source,
+					routing.GetDefaultSiteURL(ctx)+"/auth/callback",
+				)
 				handler := oidcbridge.NewHandler(client, completer, oidcbridge.NewFlowStore(cfg.FlowTTL, time.Now))
 				wrapped := middleware.WebIncomingContextMiddleware(ctx, DefaultRoute, service2.ContextKey, options.Server, handler)
 				mux.Route(RouteID).Handle("/", wrapped, routing.WithStripPrefix())

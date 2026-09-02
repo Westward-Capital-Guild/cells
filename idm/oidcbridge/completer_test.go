@@ -28,7 +28,7 @@ type fakeCodeIssuer struct {
 func (f *fakeCodeIssuer) Issue(_ context.Context, claims claim.Claims) (*pauth.GetLoginResponse, string, error) {
 	f.claims = claims
 	return &pauth.GetLoginResponse{
-		RequestURL: "https://files.example.com/oidc/auth?redirect_uri=" + url.QueryEscape("https://files.example.com/auth/callback?from=oidc") + "&state=cells-state",
+		RequestURL: "https://files.example.com/oidc/auth?state=cells-state",
 	}, "cells-code", nil
 }
 
@@ -40,6 +40,7 @@ func TestCellsCompleterIssuesCodeForSynchronizedUser(t *testing.T) {
 		fakeUserSyncer{user: &idm.User{Uuid: "user-uuid", Login: "alice", Attributes: map[string]string{"email": "alice@example.com"}}},
 		issuer,
 		"customer-oidc",
+		"https://files.example.com/auth/callback?from=oidc",
 	)
 	redirect, err := completer.Complete(context.Background(), ExternalIdentity{Login: "alice"})
 	if err != nil {
