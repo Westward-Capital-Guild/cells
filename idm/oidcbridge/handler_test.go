@@ -41,7 +41,7 @@ type fakeCompleter struct {
 
 func (f *fakeCompleter) Complete(_ context.Context, identity ExternalIdentity) (string, error) {
 	f.identity = identity
-	return "/auth/callback?code=cells-code", nil
+	return "/login/callback?code=cells-code", nil
 }
 
 func TestHandlerCompletesOneTimeOIDCFlow(t *testing.T) {
@@ -81,7 +81,7 @@ func TestHandlerCompletesOneTimeOIDCFlow(t *testing.T) {
 	if callbackResponse.Code != http.StatusFound {
 		t.Fatalf("callback status = %d, body = %q", callbackResponse.Code, callbackResponse.Body.String())
 	}
-	if callbackResponse.Header().Get("Location") != "/auth/callback?code=cells-code" {
+	if callbackResponse.Header().Get("Location") != "/login/callback?code=cells-code" {
 		t.Fatalf("callback redirect = %q", callbackResponse.Header().Get("Location"))
 	}
 	if completer.identity.Login != "alice" || client.wantNonce == "" || client.wantVerifier == "" {

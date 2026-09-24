@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/pydio/cells/v5/common/auth"
 	"github.com/pydio/cells/v5/common/auth/claim"
@@ -66,6 +67,11 @@ func (c *CellsCompleter) Complete(ctx context.Context, identity ExternalIdentity
 	if err != nil {
 		return "", fmt.Errorf("parse Cells callback URL: %w", err)
 	}
+	// Cells exchanges the code against /auth/callback, but its browser handler lives at /login/callback.
+	if !strings.HasSuffix(target.Path, "/auth/callback") {
+		return "", fmt.Errorf("unexpected Cells callback path %q", target.Path)
+	}
+	target.Path = strings.TrimSuffix(target.Path, "/auth/callback") + "/login/callback"
 	query := target.Query()
 	query.Set("code", code)
 	if state := requestURL.Query().Get("state"); state != "" {

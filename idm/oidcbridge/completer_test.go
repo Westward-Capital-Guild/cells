@@ -50,7 +50,7 @@ func TestCellsCompleterIssuesCodeForSynchronizedUser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if parsed.Path != "/auth/callback" || parsed.Query().Get("from") != "oidc" || parsed.Query().Get("code") != "cells-code" || parsed.Query().Get("state") != "cells-state" {
+	if parsed.Path != "/login/callback" || parsed.Query().Get("from") != "oidc" || parsed.Query().Get("code") != "cells-code" || parsed.Query().Get("state") != "cells-state" {
 		t.Fatalf("Complete() redirect = %q", redirect)
 	}
 	if issuer.claims.Subject != "user-uuid" || issuer.claims.Name != "alice" || issuer.claims.AuthSource != "customer-oidc" {

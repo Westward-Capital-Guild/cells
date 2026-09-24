@@ -8,7 +8,7 @@ This package is an opt-in OpenID Connect login adapter for the modified Cells Ho
 - Verifies the upstream ID token with issuer discovery, JWKS, audience, expiry, and nonce checks from `go-oidc`.
 - Binds a Cells UUID deterministically to the exact `issuer + sub` pair.
 - Creates or updates a Cells user and rejects login collisions instead of merging subjects by email.
-- Issues a Cells authorization code and returns the browser to the existing `/auth/callback` flow.
+- Issues a Cells authorization code and returns the browser to the existing `/login/callback` handler. Cells still binds the code exchange to `/auth/callback`.
 
 Group synchronization, deprovisioning, account locking, PAT revocation, and real runtime acceptance remain separate unfinished slices.
 
