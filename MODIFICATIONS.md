@@ -2,6 +2,13 @@
 
 This file provides the prominent modification notices required for this AGPL-covered fork. Dates use the Asia/Shanghai calendar date of the change.
 
+## 2026-09-24: Customer OIDC Browser Callback
+
+The customer OIDC adapter now sends the issued Cells code to the existing
+`/login/callback` browser handler. Cells still exchanges that code against its
+registered `/auth/callback` URI. This fixes the browser remaining on the login
+page after a successful upstream OIDC callback.
+
 ## 2026-09-01: OIDC-Only Browser Login And Application Logout
 
 Added:
