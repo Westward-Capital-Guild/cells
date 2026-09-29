@@ -2,6 +2,19 @@
 
 This file provides the prominent modification notices required for this AGPL-covered fork. Dates use the Asia/Shanghai calendar date of the change.
 
+## 2026-09-29: Device Management Acceptance And Portable CLI
+
+- Add a dedicated account tab for WebDAV addresses, server-verified username,
+  named device passwords, one-time secret display, persistent device metadata
+  and confirmed revocation. Derive addresses from the current site's accessible
+  workspaces; do not embed a customer domain in the platform UI.
+- Reject public and scoped identities from minting unrestricted device
+  passwords. Add ownership, secret-redaction and UI lifecycle regression tests.
+- Provide a portable OAuth/PKCE CLI using the OS keyring (or an explicit private
+  file on managed Unix hosts), with file listing, download, non-overwriting
+  upload, directory creation, delete and device management.
+- Corresponding Source is published as `customer-oidc-v0.4.0`.
+
 ## 2026-09-29: Self-Service WebDAV Device Passwords
 
 - The account panel now presents “连接电脑 / WebDAV” with the current user,

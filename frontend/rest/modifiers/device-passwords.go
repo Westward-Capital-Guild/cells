@@ -28,7 +28,7 @@ type devicePasswordInfo struct {
 }
 
 func manageDevicePassword(ctx context.Context, claims *claim.Claims, input map[string]string, out *rest.FrontSessionResponse, client pauth.PersonalAccessTokenServiceClient) error {
-	if claims == nil || claims.Subject == "" || claims.Name == "" {
+	if claims == nil || claims.Subject == "" || claims.Name == "" || claims.Public || claims.ProvidesScopes || len(claims.Scopes) > 0 {
 		return errors.WithStack(errors.StatusForbidden)
 	}
 	ctx = claim.ToContext(ctx, *claims)

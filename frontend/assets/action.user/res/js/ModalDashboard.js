@@ -24,6 +24,7 @@ const Pydio = require('pydio')
 const {ActionDialogMixin, SubmitButtonProviderMixin, AsyncComponent} = Pydio.requireLib('boot')
 const {Tabs, Tab, FontIcon, FlatButton, Paper} = require('material-ui')
 import ProfilePane from './ProfilePane'
+import DevicePasswordPanel from './DevicePasswordPanel'
 import ComponentConfigParser from './ComponentConfigParser'
 import {muiThemeable} from 'material-ui/styles'
 
@@ -77,6 +78,9 @@ let ModalDashboard = createReactClass({
             textTransform: 'none'
         };
         let tabs = [
+            (<Tab key="webdav" label="连接电脑 / WebDAV" icon={<FontIcon className="mdi mdi-laptop"/>} buttonStyle={buttonStyle} value="webdav">
+                <DevicePasswordPanel pydio={this.props.pydio}/>
+            </Tab>),
             (<Tab key="account" label={this.props.pydio.MessageHash['user_dash.title']} icon={<FontIcon className="mdi mdi-account"/>} buttonStyle={buttonStyle} value="profile">
                 <ProfilePane {...this.props} ref="profile"/>
             </Tab>)

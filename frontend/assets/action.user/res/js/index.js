@@ -22,6 +22,7 @@ import CallbaksWrapper from './Callbacks'
 import ModalDashboard from './ModalDashboard'
 import ModalAddressBook from './ModalAddressBook'
 import Directory from './Directory'
+import DevicePasswordPanel from './DevicePasswordPanel'
 
 import WelcomeModal from './WelcomeModal'
 import PasswordForm from './PasswordForm'
@@ -30,5 +31,5 @@ import PasswordForm from './PasswordForm'
 const Callbacks = CallbaksWrapper(window.pydio);
 
 export {
-    Callbacks, ModalDashboard, ModalAddressBook, WelcomeModal, PasswordForm, Directory
+    Callbacks, ModalDashboard, ModalAddressBook, WelcomeModal, PasswordForm, Directory, DevicePasswordPanel
 }
