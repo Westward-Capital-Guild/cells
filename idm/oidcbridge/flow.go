@@ -19,10 +19,11 @@ var (
 )
 
 type Flow struct {
-	State        string
-	Nonce        string
-	PKCEVerifier string
-	ExpiresAt    time.Time
+	State          string
+	Nonce          string
+	PKCEVerifier   string
+	LoginChallenge string
+	ExpiresAt      time.Time
 }
 
 type FlowStore struct {
@@ -41,7 +42,7 @@ func NewFlowStore(ttl time.Duration, now func() time.Time, maximum ...int) *Flow
 	return &FlowStore{ttl: ttl, max: max, now: now, flows: make(map[string]Flow)}
 }
 
-func (s *FlowStore) Begin() (Flow, error) {
+func (s *FlowStore) Begin(loginChallenge ...string) (Flow, error) {
 	state, err := randomToken()
 	if err != nil {
 		return Flow{}, err
@@ -59,6 +60,9 @@ func (s *FlowStore) Begin() (Flow, error) {
 		Nonce:        nonce,
 		PKCEVerifier: verifier,
 		ExpiresAt:    s.now().Add(s.ttl),
+	}
+	if len(loginChallenge) > 0 {
+		flow.LoginChallenge = loginChallenge[0]
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()

@@ -2,6 +2,16 @@
 
 This file provides the prominent modification notices required for this AGPL-covered fork. Dates use the Asia/Shanghai calendar date of the change.
 
+## 2026-09-29: Preserve CLI Login Challenges
+
+- The Passport button carries the pending Cells login challenge into the OIDC
+  adapter. Its one-time server-side flow retains that challenge, so callback
+  completion uses the original client's state, PKCE binding and redirect URI.
+- Internal browser logins without a redirect URI return to `/auth/callback`
+  instead of a bare code query at the site root. Client flows with no callback
+  fail closed.
+- Corresponding Source is published as `customer-oidc-v0.3.6`.
+
 ## 2026-09-29: Personal Datasource Recovery And CLI OAuth
 
 - Virtual personal-directory templates refresh a partially populated datasource

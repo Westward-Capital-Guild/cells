@@ -15,6 +15,20 @@ export function isExternalIdentityOnly(config) {
     return config.enabled && !config.passwordLoginEnabled && !!config.loginURL;
 }
 
+export function externalLoginURL(loginURL, currentLocation = '') {
+    if (!loginURL || !currentLocation) {
+        return loginURL;
+    }
+    const current = new URL(currentLocation, 'http://localhost');
+    const challenge = current.searchParams.get('login_challenge');
+    if (!challenge) {
+        return loginURL;
+    }
+    const target = new URL(loginURL, current.origin);
+    target.searchParams.set('login_challenge', challenge);
+    return target.toString();
+}
+
 export function completeApplicationLogout(config, loadLocalRegistry, navigate) {
     if (config.enabled && config.logoutURL) {
         navigate(config.logoutURL);

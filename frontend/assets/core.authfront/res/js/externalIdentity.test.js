@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
     isExternalIdentityOnly,
+    externalLoginURL,
     logoutApplication,
     normalizeExternalIdentityConfig,
 } from './externalIdentity';
@@ -23,6 +24,18 @@ describe('external identity configuration', () => {
         });
         expect(isExternalIdentityOnly(config)).toBe(true);
         expect(config.loginButtonLabel).toBe('Use Passport');
+    });
+});
+
+describe('external login challenge handoff', () => {
+    it('preserves the OAuth login challenge when leaving the Cells login page', () => {
+        expect(externalLoginURL('/auth/oidc/login', 'https://files.example.com/oauth2/login?login_challenge=challenge-123'))
+            .toBe('https://files.example.com/auth/oidc/login?login_challenge=challenge-123');
+    });
+
+    it('does not add a challenge to normal login navigation', () => {
+        expect(externalLoginURL('/auth/oidc/login', 'https://files.example.com/login'))
+            .toBe('/auth/oidc/login');
     });
 });
 
