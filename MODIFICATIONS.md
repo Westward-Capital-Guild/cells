@@ -2,6 +2,15 @@
 
 This file provides the prominent modification notices required for this AGPL-covered fork. Dates use the Asia/Shanghai calendar date of the change.
 
+## 2026-09-29: CLI Existing-File Upload Guard
+
+- Real DAV acceptance showed this upstream PUT handler does not enforce
+  `If-None-Match: *`. Check HEAD first and refuse existing or inaccessible paths;
+  proceed only on 404. This is a best-effort overwrite guard, not atomic create
+  under concurrent writers. Keep conditional PUT for compatible servers.
+- Standalone CLI source: `customer-files-cli-v0.1.0`; server image stays on
+  `customer-oidc-v0.4.0` because this changes only the local client and tests.
+
 ## 2026-09-29: Device Management Acceptance And Portable CLI
 
 - Add a dedicated account tab for WebDAV addresses, server-verified username,

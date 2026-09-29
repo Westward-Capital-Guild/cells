@@ -157,6 +157,19 @@ def dav_address(base, workspace, remote):
     return base + '/dav/' + workspace + '/' + '/'.join(url.quote(p, safe='') for p in parts)
 
 
+def require_missing(address, headers):
+    # Cells' DAV handler does not reliably enforce If-None-Match on PUT.
+    # Fail closed on every result except an explicit 404. This catches an
+    # existing file, but is not an atomic create against concurrent writers.
+    try:
+        request('HEAD', address, headers)
+    except RuntimeError as error:
+        if str(error).startswith('HTTP 404 '):
+            return
+        raise
+    raise RuntimeError('Remote path already exists; upload refused')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--server', required=True, type=server)
@@ -201,7 +214,9 @@ def main():
     method = {'ls': 'PROPFIND', 'get': 'GET', 'put': 'PUT', 'mkdir': 'MKCOL', 'delete': 'DELETE'}[args.command]
     if args.command == 'ls': headers['Depth'] = '1'
     if args.command in ('ls', 'mkdir') and not address.endswith('/'): address += '/'
-    if args.command == 'put': headers['If-None-Match'] = '*'
+    if args.command == 'put':
+        require_missing(address, headers)
+        headers['If-None-Match'] = '*'
     data = Path(args.local).read_bytes() if args.command == 'put' else None
     status, raw = request(method, address, headers, data)
     if args.command == 'get':

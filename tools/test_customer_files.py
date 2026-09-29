@@ -11,6 +11,16 @@ files = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(files)
 
 class FilesCLITest(unittest.TestCase):
+    def test_upload_precheck_denies_existing_and_unknown_but_allows_missing(self):
+        with patch.object(files, 'request', return_value=(200, b'')):
+            with self.assertRaisesRegex(RuntimeError, 'already exists'):
+                files.require_missing('https://files.example/dav/a', {})
+        with patch.object(files, 'request', side_effect=RuntimeError('HTTP 403 (HEAD); response body omitted')):
+            with self.assertRaisesRegex(RuntimeError, '403'):
+                files.require_missing('https://files.example/dav/a', {})
+        with patch.object(files, 'request', side_effect=RuntimeError('HTTP 404 (HEAD); response body omitted')):
+            files.require_missing('https://files.example/dav/a', {})
+
     def test_path_encoding_and_traversal_denial(self):
         self.assertEqual(files.dav_address('https://files.example', 'personal-files', '合同 A/#1.txt'), 'https://files.example/dav/personal-files/%E5%90%88%E5%90%8C%20A/%231.txt')
         for value in ['../common-files/a', '/a', 'a/../b', 'a\\b']:
