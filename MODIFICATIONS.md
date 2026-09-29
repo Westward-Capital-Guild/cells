@@ -4,8 +4,13 @@ This file provides the prominent modification notices required for this AGPL-cov
 
 ## 2026-09-29: OIDC Callback Modal And PAT Handoff
 
-- The browser callback closes the login modal left open by the unauthenticated
-  bootstrap after the OIDC session is established.
+- The browser callback exchanges the single-use authorization code on component
+  mount, rather than during rendering, and returns rejected exchanges to login.
+- The OIDC-only login dialog closes on an authenticated `user_logged` event,
+  including when user loading finishes before the dialog mounts. It removes its
+  observer on unmount and does not close unrelated dialogs or password prompts.
+- Rebuild the authentication UI in production mode; no development watcher or
+  eval-based development bundle is required in the shipped frontend.
 - The frontend REST client exposes the existing Cells `exchange_pat` flow as
   `sessionExchangePAT`, preserving the current OIDC user's full permissions
   and supporting the native sliding `auto_refresh` window.

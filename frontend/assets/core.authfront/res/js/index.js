@@ -142,6 +142,29 @@ let LoginPasswordDialog = createReactClass({
         return {rememberChecked: false, loading: false};
     },
 
+    componentDidMount(){
+        const {globalParameters} = this.state;
+        if (!isExternalIdentityOnly(normalizeExternalIdentityConfig(globalParameters.get('externalIdentity')))
+            || globalParameters.get('PASSWORD_AUTH_ONLY')) {
+            return;
+        }
+        const pydio = Pydio.getInstance();
+        this._loginObserver = (user) => {
+            if (user) {
+                this.dismiss();
+            }
+        };
+        pydio.observe('user_logged', this._loginObserver);
+        // The registry may have finished loading before this async dialog mounted.
+        this._loginObserver(pydio.user);
+    },
+
+    componentWillUnmount(){
+        if (this._loginObserver) {
+            Pydio.getInstance().stopObserving('user_logged', this._loginObserver);
+        }
+    },
+
     submit(){
         const externalIdentity = normalizeExternalIdentityConfig(this.state.globalParameters.get('externalIdentity'));
         if (isExternalIdentityOnly(externalIdentity)) {

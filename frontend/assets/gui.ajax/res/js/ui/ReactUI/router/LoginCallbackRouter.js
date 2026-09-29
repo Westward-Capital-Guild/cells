@@ -25,7 +25,7 @@ const queryString = require('query-string');
 
 const LoginCallbackRouterWrapper = (pydio) => {
     return class extends React.PureComponent {
-        render() {
+        componentDidMount() {
             const values = queryString.parse(this.props.location.search)
 
             // Eventually find loginLanguage in sessionStorage
@@ -37,9 +37,6 @@ const LoginCallbackRouterWrapper = (pydio) => {
             sessionStorage.removeItem('loginLanguage');
 
             PydioApi.getRestClient().sessionLoginWithAuthCode(values.code, additionalInfo).then(() => {
-                if (pydio.UI && typeof pydio.UI.closeCurrentModal === 'function') {
-                    pydio.UI.closeCurrentModal()
-                }
                 browserHistory.replace("/")
 
                 const challenge = values.challenge
@@ -50,8 +47,14 @@ const LoginCallbackRouterWrapper = (pydio) => {
                 PydioApi.getRestClient().getOrUpdateJwt()
                     .then(() => pydio.loadXmlRegistry(null, null, null))
                     .catch(() => {})
+            }).catch(() => {
+                // Drop the consumed/invalid code and allow a fresh login attempt.
+                browserHistory.replace("/login")
             })
 
+        }
+
+        render() {
             return <div></div>
         }
     }

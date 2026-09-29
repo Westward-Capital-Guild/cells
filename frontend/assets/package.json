@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "test:oidc-login": "node --test tests/oidc-login.test.cjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write",
