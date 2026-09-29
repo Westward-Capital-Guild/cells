@@ -218,12 +218,6 @@ export default class Builder{
         this._modalOpener = null;
     }
 
-    closeCurrentModal(){
-        if(this._modalOpener && this._modalOpener.handleClose){
-            this._modalOpener.handleClose();
-        }
-    }
-
     openComponentInModal(namespace, componentName, props){
         if(!this._modalOpener){
             Logger.error('Cannot find any modal opener for opening component ' + namespace + '.' + componentName);

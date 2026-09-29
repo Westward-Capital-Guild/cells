@@ -286,6 +286,10 @@ func (m *virtualNodesManager) toJsUser(ctx context.Context, c claim.Claims) *per
 
 // resolvePathWithClaims performs the actual Path resolution and returns a node. There is no guarantee that the node exists.
 func (m *virtualNodesManager) resolvePathWithClaims(ctx context.Context, vNode *tree.Node, c claim.Claims, clientsPool nodes.SourcesPool) (*tree.Node, error) {
+	return m.resolvePathWithSources(ctx, vNode, c, clientsPool, true)
+}
+
+func (m *virtualNodesManager) resolvePathWithSources(ctx context.Context, vNode *tree.Node, c claim.Claims, clientsPool nodes.SourcesPool, reloadMissing bool) (*tree.Node, error) {
 
 	resolved := &tree.Node{}
 	jsUser := m.toJsUser(ctx, c)
@@ -294,9 +298,10 @@ func (m *virtualNodesManager) resolvePathWithClaims(ctx context.Context, vNode *
 	if cType, exists := vNode.MetaStore["contentType"]; exists && cType == "text/javascript" {
 
 		datasourceKeys := map[string]string{}
-		if len(clientsPool.GetDataSources()) == 0 {
+		if reloadMissing && len(clientsPool.GetDataSources()) == 0 {
 			log.Logger(ctx).Debug("Clientspool.clients is empty! reload datasources now!")
 			clientsPool.LoadDataSources()
+			reloadMissing = false
 		}
 		for key := range clientsPool.GetDataSources() {
 			datasourceKeys[key] = key
@@ -322,6 +327,13 @@ func (m *virtualNodesManager) resolvePathWithClaims(ctx context.Context, vNode *
 					dsName, _ = dsVal.(string)
 				}
 				if dsVal == nil || dsName == "" {
+					// A partially populated pool can miss a datasource that was not
+					// ready during startup. Refresh once and rebuild the template's
+					// inputs before failing; do not retry invalid scripts or ACLs.
+					if reloadMissing {
+						clientsPool.LoadDataSources()
+						return m.resolvePathWithSources(ctx, vNode, c, clientsPool, false)
+					}
 					log.Logger(ctx).Warn("Unknown datasource name while resolving template path", zap.Int("knownSources", len(datasourceKeys)), zap.String("template", resolutionString))
 					return nil, errors.New("cannot resolve datasource in template path, may be referring to an unavailable datasource")
 				}

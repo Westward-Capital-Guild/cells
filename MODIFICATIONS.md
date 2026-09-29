@@ -2,10 +2,27 @@
 
 This file provides the prominent modification notices required for this AGPL-covered fork. Dates use the Asia/Shanghai calendar date of the change.
 
+## 2026-09-29: Personal Datasource Recovery And CLI OAuth
+
+- Virtual personal-directory templates refresh a partially populated datasource
+  pool once when their datasource is missing, then retry with fresh template
+  inputs. Unavailable sources still fail closed; user ACLs are unchanged.
+- New persisted JWK rows receive unique UUIDs, allowing the public JWKS endpoint
+  to initialize additional key sets without colliding with legacy zero-UUID
+  rows. Existing signing keys are preserved.
+- Cells authorization-code issuance preserves the original consent request's
+  nonce through the native OIDC response flow, including PKCE clients.
+- The corresponding-source notice points to `customer-oidc-v0.3.5`.
+
 ## 2026-09-29: OIDC Callback Modal And PAT Handoff
 
-- The browser callback closes the login modal left open by the unauthenticated
-  bootstrap after the OIDC session is established.
+- The browser callback exchanges the single-use authorization code on component
+  mount, rather than during rendering, and returns rejected exchanges to login.
+- The OIDC-only login dialog closes on an authenticated `user_logged` event,
+  including when user loading finishes before the dialog mounts. It removes its
+  observer on unmount and does not close unrelated dialogs or password prompts.
+- Rebuild the authentication UI in production mode; no development watcher or
+  eval-based development bundle is required in the shipped frontend.
 - The frontend REST client exposes the existing Cells `exchange_pat` flow as
   `sessionExchangePAT`, preserving the current OIDC user's full permissions
   and supporting the native sliding `auto_refresh` window.

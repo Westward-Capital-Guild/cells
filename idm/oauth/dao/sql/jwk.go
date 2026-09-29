@@ -25,6 +25,7 @@ import (
 	"reflect"
 
 	jose "github.com/go-jose/go-jose/v3"
+	"github.com/gofrs/uuid"
 	"github.com/ory/hydra/v2/jwk"
 	"github.com/ory/hydra/v2/x"
 	"github.com/ory/x/errorsx"
@@ -78,8 +79,13 @@ func (j *jwkDriver) addKey(db *gorm.DB, ctx context.Context, set string, key *jo
 	if err != nil {
 		return err
 	}
+	id, err := uuid.NewV4()
+	if err != nil {
+		return err
+	}
 
 	data := &jwk.SQLData{
+		ID:      id,
 		Set:     set,
 		KID:     key.KeyID,
 		Version: 0,

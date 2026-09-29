@@ -400,6 +400,17 @@ func (h *Handler) CreateAuthCode(ctx context.Context, in *pauth.CreateAuthCodeRe
 		return nil, errors.WithMessage(err, "while trying to authorize request")
 	}
 
+	// This authorization request was reconstructed for the accepted consent.
+	// Restore nonce from that verified flow so Fosite persists and validates it
+	// when issuing the ID token, rather than silently dropping the CLI nonce.
+	originalURL, err := url.Parse(session.ConsentRequest.RequestURL)
+	if err != nil {
+		return nil, errors.WithMessage(err, "while restoring authorization request")
+	}
+	if nonce := originalURL.Query().Get("nonce"); nonce != "" {
+		ar.GetRequestForm().Set("nonce", nonce)
+	}
+
 	for _, scope := range session.GrantedScope {
 		ar.GrantScope(scope)
 	}
