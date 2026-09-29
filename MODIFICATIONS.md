@@ -2,6 +2,19 @@
 
 This file provides the prominent modification notices required for this AGPL-covered fork. Dates use the Asia/Shanghai calendar date of the change.
 
+## 2026-09-29: Independent CLI Maintenance Moved Out Of The Server Fork
+
+- Remove the independent `tools/customer-files.py` HTTP/OAuth/WebDAV client
+  and its test from the active server branch. They are maintained in the
+  private integration layer, with their existing license and provenance
+  retained. They are not linked into or required to build/run Cells.
+- Historical source tags, including `customer-files-cli-v0.1.0` and the source
+  for the deployed `customer-oidc-v0.4.0` image, remain unchanged and available.
+  This move does not revoke any existing license grants.
+- Cells UI/API/authentication patches and the embedded `idm/oidcbridge`
+  remain in this public fork. This is not an OIDC service extraction and does
+  not require a new server image or change the deployed source offer.
+
 ## 2026-09-29: CLI Existing-File Upload Guard
 
 - Real DAV acceptance showed this upstream PUT handler does not enforce
