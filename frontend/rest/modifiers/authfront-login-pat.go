@@ -45,7 +45,8 @@ func AuthorizationExchangePAT(middleware frontend.AuthMiddleware) frontend.AuthM
 
 	return func(req *restful.Request, rsp *restful.Response, in *frontend.FrontSessionWithRuntimeCtx, out *rest.FrontSessionResponse, session *sessions.Session) error {
 
-		if a, ok := in.AuthInfo["type"]; !ok || a != "exchange_pat" { // Ignore this middleware
+		a := in.AuthInfo["type"]
+		if a != "exchange_pat" && a != "device_password_create" && a != "device_password_list" && a != "device_password_revoke" {
 			return middleware(req, rsp, in, out, session)
 		}
 
@@ -57,11 +58,19 @@ func AuthorizationExchangePAT(middleware frontend.AuthMiddleware) frontend.AuthM
 		if !set {
 			return errors.WithMessage(errors.InvalidParameters, "missing access_token from parameters or from session")
 		}
-		accessToken := tok.(string)
+		accessToken, valid := tok.(string)
+		if !valid || accessToken == "" {
+			return errors.WithStack(errors.MissingClaims)
+		}
 		ctx := req.Request.Context()
 		_, claims, err := auth.DefaultJWTVerifier().Verify(ctx, accessToken)
 		if err != nil {
 			return err
+		}
+		if a != "exchange_pat" {
+			rsp.AddHeader("Cache-Control", "no-store")
+			return manageDevicePassword(ctx, &claims, in.AuthInfo, out,
+				pauth.NewPersonalAccessTokenServiceClient(grpc.ResolveConn(ctx, common.ServiceTokenGRPC)))
 		}
 
 		genRequest := &pauth.PatGenerateRequest{

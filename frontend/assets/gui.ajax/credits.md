@@ -2,9 +2,9 @@
 
 This is an unofficial modified build maintained by Westward Capital Guild, not an official Pydio release. It is licensed under the GNU Affero General Public License v3 or later.
 
-- [Corresponding Source for `customer-oidc-v0.3.8`](https://github.com/Westward-Capital-Guild/cells/tree/customer-oidc-v0.3.8)
-- [Modification notices](https://github.com/Westward-Capital-Guild/cells/blob/customer-oidc-v0.3.8/MODIFICATIONS.md)
-- [GNU AGPL license](https://github.com/Westward-Capital-Guild/cells/blob/customer-oidc-v0.3.8/LICENSE)
+- [Corresponding Source for `customer-oidc-v0.3.9`](https://github.com/Westward-Capital-Guild/cells/tree/customer-oidc-v0.3.9)
+- [Modification notices](https://github.com/Westward-Capital-Guild/cells/blob/customer-oidc-v0.3.9/MODIFICATIONS.md)
+- [GNU AGPL license](https://github.com/Westward-Capital-Guild/cells/blob/customer-oidc-v0.3.9/LICENSE)
 
 #### Third Party Library
 

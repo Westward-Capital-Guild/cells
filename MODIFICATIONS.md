@@ -9,8 +9,9 @@ This file provides the prominent modification notices required for this AGPL-cov
   revoke action. Users do not need to understand PATs or use their Passport
   password for desktop mounts.
 - Device passwords reuse the authenticated user's existing sliding PAT flow;
-  the backend accepts a user-provided label while preserving that user's ACL.
-- Corresponding Source is published as `customer-oidc-v0.3.8`.
+  the backend accepts a user-provided label, lists only that user's labeled
+  devices, and revokes by token UUID while preserving that user's ACL.
+- Corresponding Source is published as `customer-oidc-v0.3.9`.
 
 ## 2026-09-29: Browser Callback Route
 

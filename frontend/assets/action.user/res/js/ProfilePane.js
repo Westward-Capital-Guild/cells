@@ -25,30 +25,34 @@ import {FlatButton} from "material-ui";
 import Pydio from "pydio";
 import PydioApi from 'pydio/http/api';
 import {UserServiceApi} from 'cells-sdk';
-import {TokenServiceApi, RestRevokeRequest} from 'cells-sdk';
 
 const {Manager, FormPanel} = Pydio.requireLib('form');
 
 class DevicePasswordPanel extends React.Component {
-    state = {label: '', token: null, busy: false, copied: false, message: null};
+    state = {label: '', token: null, devices: [], busy: false, copied: false, message: null};
+
+    componentDidMount() {
+        this.refresh();
+    }
+
+    refresh = () => this.props.pydio.getRestClient().devicePasswordRequest('device_password_list')
+        .then(data => this.setState({devices: JSON.parse((data.TriggerInfo || {}).devices || '[]')}))
+        .catch(() => {});
 
     create = () => {
         const label = this.state.label.trim();
         if (!label || this.state.busy) return;
         this.setState({busy: true, message: null, copied: false});
-        this.props.pydio.getRestClient().sessionExchangePAT('180d', [], `WebDAV device: ${label}`)
-            .then(token => this.setState({token, busy: false}))
+        this.props.pydio.getRestClient().devicePasswordRequest('device_password_create', {label})
+            .then(data => this.setState({token: {...data.Token, id: data.TriggerInfo && data.TriggerInfo.id}, busy: false}, this.refresh))
             .catch(error => this.setState({busy: false, message: error.message || '创建失败'}));
     };
 
-    revoke = () => {
-        const token = this.state.token && this.state.token.AccessToken;
-        if (!token || this.state.busy) return;
+    revoke = id => {
+        if (!id || this.state.busy) return;
         this.setState({busy: true});
-        const request = new RestRevokeRequest();
-        request.TokenId = token;
-        new TokenServiceApi(PydioApi.getRestClient()).revoke(request)
-            .then(() => this.setState({token: null, busy: false, copied: false, message: '设备密码已撤销'}))
+        this.props.pydio.getRestClient().devicePasswordRequest('device_password_revoke', {id})
+            .then(() => this.setState({token: null, busy: false, copied: false, message: '设备密码已撤销'}, this.refresh))
             .catch(error => this.setState({busy: false, message: error.message || '撤销失败'}));
     };
 
@@ -78,9 +82,10 @@ class DevicePasswordPanel extends React.Component {
                 <code style={{display: 'block', wordBreak: 'break-all', padding: 8, background: '#f5f5f5'}}>{token}</code>
                 <div style={{marginTop: 8}}>
                     <FlatButton primary label={this.state.copied ? '已复制' : '复制密码'} onClick={this.copy}/>
-                    <FlatButton label="撤销此设备密码" disabled={this.state.busy} onClick={this.revoke}/>
+                    <FlatButton label="撤销此设备密码" disabled={this.state.busy} onClick={() => this.revoke(this.state.token.id)}/>
                 </div>
             </div>}
+            {this.state.devices.length > 0 && <div style={{marginTop: 16}}><div style={{fontSize: 13, marginBottom: 6}}>已连接设备</div>{this.state.devices.map(device => <div key={device.id} style={{display: 'flex', alignItems: 'center', marginBottom: 4}}><span style={{flex: 1}}>{device.name}</span><FlatButton label="撤销" disabled={this.state.busy} onClick={() => this.revoke(device.id)}/></div>)}</div>}
             {this.state.message && <div style={{marginTop: 8, color: '#666'}}>{this.state.message}</div>}
         </div>;
     }

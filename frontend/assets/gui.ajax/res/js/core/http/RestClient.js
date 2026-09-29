@@ -162,6 +162,10 @@ class RestClient extends ApiClient{
         });
     }
 
+    devicePasswordRequest(type, fields = {}) {
+        return this.jwtEndpoint({AuthInfo: {type, ...fields}}).then(response => response.data || {});
+    }
+
     sessionRefresh(){
         return this.jwtWithAuthInfo({type: "refresh"});
     }
