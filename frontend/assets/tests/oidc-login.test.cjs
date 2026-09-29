@@ -42,6 +42,41 @@ function callback(client, pydio, navigations) {
     return new Component({location: {search: '?code=synthetic-single-use-code'}});
 }
 
+for (const pathname of ['/auth/callback', '/login/callback']) {
+    test(`actual router exchanges the code at ${pathname} instead of selecting a workspace`, async () => {
+        let exchanges = 0;
+        const ignored = () => () => null;
+        const dependencies = {
+            './MainRouter': ignored, './HomepageRouter': ignored,
+            './WorkspaceRouter': ignored, './PathRouter': ignored,
+            './LoginRouter': ignored, './LogoutRouter': ignored,
+            './LogoutCallbackRouter': ignored,
+            './OAuthRouter': {OAuthLoginRouter: ignored, OAuthOOBRouter: ignored,
+                OAuthFallbacksRouter: ignored},
+            'react-router/lib/browserHistory': {replace() {}},
+            'pydio/http/api': {getRestClient: () => ({sessionLoginWithAuthCode(code) {
+                assert.equal(code, 'synthetic-code');
+                exchanges++;
+                return new Promise(() => {});
+            }})},
+        };
+        const {default: Router} = load('gui.ajax/res/js/ui/ReactUI/router/Router.js',
+            dependencies, {sessionStorage: {getItem: () => null, removeItem() {}}});
+        const routes = new Router({pydio: {}}).render().props.routes;
+        const props = await new Promise((resolve, reject) => {
+            gui('react-router').match({routes, location: pathname + '?code=synthetic-code'},
+                (error, redirect, props) => error ? reject(error) : resolve(props));
+        });
+        assert.ok(props);
+        const Component = props.components.filter(Boolean).at(-1);
+        const component = new Component({location: props.location});
+        component.componentDidMount();
+        component.render();
+        component.render();
+        assert.equal(exchanges, 1);
+    });
+}
+
 test('rendering the callback repeatedly exchanges a single-use code only once', () => {
     let exchanges = 0;
     const component = callback({sessionLoginWithAuthCode() {

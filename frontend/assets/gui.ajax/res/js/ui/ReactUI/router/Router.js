@@ -37,6 +37,7 @@ import LogoutCallbackRouter from './LogoutCallbackRouter';
 function getRoutes(pydio){
     return (
         <Switch>
+            <Route path="/auth/callback" component={LoginCallbackRouter(pydio)} />
             <Route path="/login">
                 <IndexRoute component={LoginRouter(pydio)}/>
                 <Route path="callback" component={LoginCallbackRouter(pydio)} />

@@ -2,6 +2,13 @@
 
 This file provides the prominent modification notices required for this AGPL-covered fork. Dates use the Asia/Shanghai calendar date of the change.
 
+## 2026-09-29: Browser Callback Route
+
+- Register `/auth/callback` in the shipped React router so the browser OIDC
+  authorization code is exchanged instead of being interpreted as a workspace
+  path. The existing `/login/callback` route remains supported.
+- Corresponding Source is published as `customer-oidc-v0.3.7`.
+
 ## 2026-09-29: Preserve CLI Login Challenges
 
 - The Passport button carries the pending Cells login challenge into the OIDC
