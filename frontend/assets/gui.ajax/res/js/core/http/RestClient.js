@@ -142,6 +142,23 @@ class RestClient extends ApiClient{
         return this.jwtWithAuthInfo({code, type:"authorization_code", ...additionalInfo}, false)
     }
 
+    sessionExchangePAT(autoRefresh = '7d', scopes = []) {
+        const authInfo = {
+            type: "exchange_pat",
+            auto_refresh: autoRefresh,
+        };
+        if (scopes.length) {
+            authInfo.scopes = scopes.join(',');
+        }
+        return this.jwtEndpoint({AuthInfo: authInfo}).then(response => {
+            if (!response.data || !response.data.Token) {
+                throw new Error("Cells did not return an exchanged personal access token");
+            }
+            this.store(response.data.Token);
+            return response.data.Token;
+        });
+    }
+
     sessionRefresh(){
         return this.jwtWithAuthInfo({type: "refresh"});
     }
