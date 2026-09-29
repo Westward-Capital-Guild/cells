@@ -2,6 +2,18 @@
 
 This file provides the prominent modification notices required for this AGPL-covered fork. Dates use the Asia/Shanghai calendar date of the change.
 
+## 2026-09-29: Personal Datasource Recovery And CLI OAuth
+
+- Virtual personal-directory templates refresh a partially populated datasource
+  pool once when their datasource is missing, then retry with fresh template
+  inputs. Unavailable sources still fail closed; user ACLs are unchanged.
+- New persisted JWK rows receive unique UUIDs, allowing the public JWKS endpoint
+  to initialize additional key sets without colliding with legacy zero-UUID
+  rows. Existing signing keys are preserved.
+- Cells authorization-code issuance preserves the original consent request's
+  nonce through the native OIDC response flow, including PKCE clients.
+- The corresponding-source notice points to `customer-oidc-v0.3.5`.
+
 ## 2026-09-29: OIDC Callback Modal And PAT Handoff
 
 - The browser callback exchanges the single-use authorization code on component
