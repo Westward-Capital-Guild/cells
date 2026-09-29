@@ -37,6 +37,9 @@ const LoginCallbackRouterWrapper = (pydio) => {
             sessionStorage.removeItem('loginLanguage');
 
             PydioApi.getRestClient().sessionLoginWithAuthCode(values.code, additionalInfo).then(() => {
+                if (pydio.UI && typeof pydio.UI.closeCurrentModal === 'function') {
+                    pydio.UI.closeCurrentModal()
+                }
                 browserHistory.replace("/")
 
                 const challenge = values.challenge
