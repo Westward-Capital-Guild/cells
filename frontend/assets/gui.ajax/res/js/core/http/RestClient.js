@@ -142,13 +142,16 @@ class RestClient extends ApiClient{
         return this.jwtWithAuthInfo({code, type:"authorization_code", ...additionalInfo}, false)
     }
 
-    sessionExchangePAT(autoRefresh = '7d', scopes = []) {
+    sessionExchangePAT(autoRefresh = '7d', scopes = [], label = undefined) {
         const authInfo = {
             type: "exchange_pat",
             auto_refresh: autoRefresh,
         };
         if (scopes.length) {
             authInfo.scopes = scopes.join(',');
+        }
+        if (label) {
+            authInfo.label = label;
         }
         return this.jwtEndpoint({AuthInfo: authInfo}).then(response => {
             if (!response.data || !response.data.Token) {

@@ -71,6 +71,9 @@ func AuthorizationExchangePAT(middleware frontend.AuthMiddleware) frontend.AuthM
 			Label:     "Exchanged Token",
 			Issuer:    req.Request.URL.String(),
 		}
+		if label, ok := in.AuthInfo["label"]; ok && strings.TrimSpace(label) != "" {
+			genRequest.Label = strings.TrimSpace(label)
+		}
 
 		var expiresAt time.Time
 		if exp, ok := in.AuthInfo["expires_in"]; ok {

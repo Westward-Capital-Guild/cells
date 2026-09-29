@@ -2,6 +2,16 @@
 
 This file provides the prominent modification notices required for this AGPL-covered fork. Dates use the Asia/Shanghai calendar date of the change.
 
+## 2026-09-29: Self-Service WebDAV Device Passwords
+
+- The account panel now presents “连接电脑 / WebDAV” with the current user,
+  shared WebDAV address, device label, one-time copyable device password and
+  revoke action. Users do not need to understand PATs or use their Passport
+  password for desktop mounts.
+- Device passwords reuse the authenticated user's existing sliding PAT flow;
+  the backend accepts a user-provided label while preserving that user's ACL.
+- Corresponding Source is published as `customer-oidc-v0.3.8`.
+
 ## 2026-09-29: Browser Callback Route
 
 - Register `/auth/callback` in the shipped React router so the browser OIDC

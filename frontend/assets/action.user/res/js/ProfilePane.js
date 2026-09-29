@@ -25,8 +25,66 @@ import {FlatButton} from "material-ui";
 import Pydio from "pydio";
 import PydioApi from 'pydio/http/api';
 import {UserServiceApi} from 'cells-sdk';
+import {TokenServiceApi, RestRevokeRequest} from 'cells-sdk';
 
 const {Manager, FormPanel} = Pydio.requireLib('form');
+
+class DevicePasswordPanel extends React.Component {
+    state = {label: '', token: null, busy: false, copied: false, message: null};
+
+    create = () => {
+        const label = this.state.label.trim();
+        if (!label || this.state.busy) return;
+        this.setState({busy: true, message: null, copied: false});
+        this.props.pydio.getRestClient().sessionExchangePAT('180d', [], `WebDAV device: ${label}`)
+            .then(token => this.setState({token, busy: false}))
+            .catch(error => this.setState({busy: false, message: error.message || '创建失败'}));
+    };
+
+    revoke = () => {
+        const token = this.state.token && this.state.token.AccessToken;
+        if (!token || this.state.busy) return;
+        this.setState({busy: true});
+        const request = new RestRevokeRequest();
+        request.TokenId = token;
+        new TokenServiceApi(PydioApi.getRestClient()).revoke(request)
+            .then(() => this.setState({token: null, busy: false, copied: false, message: '设备密码已撤销'}))
+            .catch(error => this.setState({busy: false, message: error.message || '撤销失败'}));
+    };
+
+    copy = () => {
+        const value = this.state.token && this.state.token.AccessToken;
+        if (!value) return;
+        navigator.clipboard.writeText(value).then(() => this.setState({copied: true}));
+    };
+
+    render() {
+        const {pydio} = this.props;
+        const token = this.state.token && this.state.token.AccessToken;
+        const username = pydio.user && (pydio.user.id || pydio.user.login);
+        return <div style={{marginTop: 24, padding: 16, borderTop: '1px solid #e0e0e0'}}>
+            <div style={{fontSize: 18, marginBottom: 8}}>连接电脑 / WebDAV</div>
+            <div style={{color: '#666', marginBottom: 12}}>为电脑创建一个专用密码。它只用于 WebDAV 挂载，不需要理解或使用 PAT。</div>
+            <div style={{fontSize: 13, marginBottom: 4}}>地址</div>
+            <code style={{display: 'block', marginBottom: 8}}>{window.location.origin}/dav/common-files/</code>
+            <div style={{fontSize: 13, marginBottom: 4}}>用户名</div>
+            <code style={{display: 'block', marginBottom: 12}}>{username}</code>
+            {!token && <div style={{display: 'flex', gap: 8}}>
+                <input value={this.state.label} placeholder="例如：我的 Mac" onChange={e => this.setState({label: e.target.value})} />
+                <FlatButton primary label={this.state.busy ? '创建中…' : '创建设备密码'} disabled={this.state.busy || !this.state.label.trim()} onClick={this.create}/>
+            </div>}
+            {token && <div>
+                <div style={{fontSize: 13, color: '#a15c00', marginBottom: 6}}>设备密码只显示这一次，请立即复制并保存。</div>
+                <code style={{display: 'block', wordBreak: 'break-all', padding: 8, background: '#f5f5f5'}}>{token}</code>
+                <div style={{marginTop: 8}}>
+                    <FlatButton primary label={this.state.copied ? '已复制' : '复制密码'} onClick={this.copy}/>
+                    <FlatButton label="撤销此设备密码" disabled={this.state.busy} onClick={this.revoke}/>
+                </div>
+            </div>}
+            {this.state.message && <div style={{marginTop: 8, color: '#666'}}>{this.state.message}</div>}
+        </div>;
+    }
+}
 
 const FORM_CSS = ` 
 .react-mui-context .current-user-edit.pydio-form-panel > .pydio-form-group:first-of-type {
@@ -208,6 +266,7 @@ class ProfilePane extends React.Component {
                     onChange={this.onFormChange}
                     variant={"v2"}
                 />
+                <DevicePasswordPanel pydio={pydio}/>
                 <style type="text/css" dangerouslySetInnerHTML={{__html: FORM_CSS}}></style>
             </div>
         );
