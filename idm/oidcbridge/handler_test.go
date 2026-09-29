@@ -36,12 +36,28 @@ func (f *fakeOIDCClient) ExchangeAndVerify(_ context.Context, code, nonce, pkceV
 }
 
 type fakeCompleter struct {
-	identity ExternalIdentity
+	identity  ExternalIdentity
+	challenge string
 }
 
-func (f *fakeCompleter) Complete(_ context.Context, identity ExternalIdentity) (string, error) {
+func (f *fakeCompleter) Complete(_ context.Context, identity ExternalIdentity, challenge string) (string, error) {
 	f.identity = identity
+	f.challenge = challenge
 	return "/auth/callback?code=cells-code", nil
+}
+
+func TestHandlerCarriesLoginChallengeThroughOIDCFlow(t *testing.T) {
+	client := &fakeOIDCClient{authorizationURL: "https://id.example.com/authorize", callbackIdentity: ExternalIdentity{Login: "alice"}}
+	completer := &fakeCompleter{}
+	handler := NewHandler(client, completer, NewFlowStore(5*time.Minute, time.Now))
+	loginResponse := httptest.NewRecorder()
+	handler.ServeHTTP(loginResponse, httptest.NewRequest(http.MethodGet, "/login?login_challenge=original-challenge", nil))
+	parsed, _ := url.Parse(loginResponse.Header().Get("Location"))
+	callbackResponse := httptest.NewRecorder()
+	handler.ServeHTTP(callbackResponse, httptest.NewRequest(http.MethodGet, "/callback?code=upstream&state="+url.QueryEscape(parsed.Query().Get("state")), nil))
+	if callbackResponse.Code != http.StatusFound || completer.identity.Login != "alice" || completer.challenge != "original-challenge" {
+		t.Fatalf("callback did not complete: status=%d identity=%#v challenge=%q", callbackResponse.Code, completer.identity, completer.challenge)
+	}
 }
 
 func TestHandlerCompletesOneTimeOIDCFlow(t *testing.T) {

@@ -18,7 +18,7 @@ type OIDCClient interface {
 }
 
 type LoginCompleter interface {
-	Complete(ctx context.Context, identity ExternalIdentity) (redirectURL string, err error)
+	Complete(ctx context.Context, identity ExternalIdentity, loginChallenge string) (redirectURL string, err error)
 }
 
 type Handler struct {
@@ -51,7 +51,7 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	flow, err := h.flows.Begin()
+	flow, err := h.flows.Begin(r.URL.Query().Get("login_challenge"))
 	if err != nil {
 		http.Error(w, "could not start OIDC login", http.StatusInternalServerError)
 		return
@@ -86,7 +86,7 @@ func (h *Handler) callback(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "OIDC login verification failed", http.StatusUnauthorized)
 		return
 	}
-	redirectURL, err := h.completer.Complete(r.Context(), identity)
+	redirectURL, err := h.completer.Complete(r.Context(), identity, flow.LoginChallenge)
 	if err != nil {
 		log.Logger(r.Context()).Warn("Customer OIDC Cells login completion failed", zap.Error(err))
 		http.Error(w, "could not complete Cells login", http.StatusUnauthorized)

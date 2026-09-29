@@ -17,12 +17,15 @@ import (
 )
 
 type CodeIssuer interface {
-	Issue(ctx context.Context, claims claim.Claims) (*pauth.GetLoginResponse, string, error)
+	Issue(ctx context.Context, claims claim.Claims, loginChallenge string) (*pauth.GetLoginResponse, string, error)
 }
 
 type defaultCodeIssuer struct{}
 
-func (defaultCodeIssuer) Issue(ctx context.Context, claims claim.Claims) (*pauth.GetLoginResponse, string, error) {
+func (defaultCodeIssuer) Issue(ctx context.Context, claims claim.Claims, loginChallenge string) (*pauth.GetLoginResponse, string, error) {
+	if loginChallenge != "" {
+		return auth.DefaultJWTVerifier().LoginChallengeCode(ctx, claims, auth.SetChallenge(loginChallenge))
+	}
 	login, err := hydra.CreateLogin(ctx, config.DefaultOAuthClientID, []string{"openid", "profile", "offline"}, nil)
 	if err != nil {
 		return nil, "", fmt.Errorf("create Cells login flow: %w", err)
@@ -43,7 +46,7 @@ func NewCellsCompleter(users UserSyncer, codes CodeIssuer, source string) *Cells
 	return &CellsCompleter{users: users, codes: codes, source: source}
 }
 
-func (c *CellsCompleter) Complete(ctx context.Context, identity ExternalIdentity) (string, error) {
+func (c *CellsCompleter) Complete(ctx context.Context, identity ExternalIdentity, loginChallenge string) (string, error) {
 	user, err := c.users.Sync(ctx, identity)
 	if err != nil {
 		return "", err
@@ -54,7 +57,7 @@ func (c *CellsCompleter) Complete(ctx context.Context, identity ExternalIdentity
 		Email:       user.GetAttributes()["email"],
 		DisplayName: user.GetAttributes()["name"],
 		AuthSource:  c.source,
-	})
+	}, loginChallenge)
 	if err != nil {
 		return "", err
 	}
@@ -65,6 +68,14 @@ func (c *CellsCompleter) Complete(ctx context.Context, identity ExternalIdentity
 	redirectURI, err := oauth.GetRedirectURIFromRequestValues(requestURL.Query())
 	if err != nil {
 		return "", fmt.Errorf("resolve Cells callback URL: %w", err)
+	}
+	if redirectURI == "" {
+		if loginChallenge != "" {
+			return "", fmt.Errorf("Cells client login has no callback URL")
+		}
+		// CreateLogin produces an internal flow without redirect_uri. The
+		// native browser code exchanger lives at this same-origin route.
+		redirectURI = "/auth/callback"
 	}
 	target, err := url.Parse(redirectURI)
 	if err != nil {

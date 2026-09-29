@@ -26,7 +26,7 @@ import {muiThemeable, getMuiTheme, darkBaseTheme} from 'material-ui/styles';
 import {CircularProgress, TextField, MuiThemeProvider, FlatButton, Checkbox, FontIcon, MenuItem, IconButton, IconMenu} from 'material-ui';
 import {TokenServiceApi, RestResetPasswordRequest} from 'cells-sdk';
 import { resolveForgotPasswordNavigation } from './forgotPasswordLink';
-import {isExternalIdentityOnly, logoutApplication, normalizeExternalIdentityConfig} from './externalIdentity';
+import {externalLoginURL, isExternalIdentityOnly, logoutApplication, normalizeExternalIdentityConfig} from './externalIdentity';
 const {ValidPassword} = Pydio.requireLib('form')
 const {Loader} = Pydio.requireLib('boot')
 
@@ -168,7 +168,7 @@ let LoginPasswordDialog = createReactClass({
     submit(){
         const externalIdentity = normalizeExternalIdentityConfig(this.state.globalParameters.get('externalIdentity'));
         if (isExternalIdentityOnly(externalIdentity)) {
-            window.location.assign(externalIdentity.loginURL);
+            window.location.assign(externalLoginURL(externalIdentity.loginURL, window.location.href));
             return;
         }
         let client = PydioApi.getRestClient();
@@ -220,7 +220,7 @@ let LoginPasswordDialog = createReactClass({
                     labelStyle={{color:'white'}}
                     key="external-identity"
                     label={externalIdentity.loginButtonLabel}
-                    onClick={() => window.location.assign(externalIdentity.loginURL)}
+                    onClick={() => window.location.assign(externalLoginURL(externalIdentity.loginURL, window.location.href))}
                     className={"loginButtonSubmit"}
                 />
             )];
