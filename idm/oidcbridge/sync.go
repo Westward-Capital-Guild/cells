@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/pydio/cells/v5/common"
 	"github.com/pydio/cells/v5/common/client/commons/idmc"
 	cellerrors "github.com/pydio/cells/v5/common/errors"
 	"github.com/pydio/cells/v5/common/permissions"
@@ -105,6 +106,12 @@ func mergeIdentity(user *idm.User, identity ExternalIdentity) *idm.User {
 	}
 	for key, value := range user.GetAttributes() {
 		out.Attributes[key] = value
+	}
+	// JWT creation treats an absent profile as standard. Persist that default
+	// before a frontend preferences save can apply REST's shared-user default.
+	// Never promote an explicitly restricted (or otherwise assigned) profile.
+	if out.Attributes[idm.UserAttrProfile] == "" {
+		out.Attributes[idm.UserAttrProfile] = common.PydioProfileStandard
 	}
 	out.Attributes[AttributeOIDCIssuer] = identity.Issuer
 	out.Attributes[AttributeOIDCSubject] = identity.Subject
