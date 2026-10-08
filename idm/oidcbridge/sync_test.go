@@ -126,3 +126,59 @@ func TestUserSynchronizerRejectsChangedBinding(t *testing.T) {
 		t.Fatalf("Sync() error = %v, want ErrIdentityConflict", err)
 	}
 }
+
+// An absent persisted profile is treated as standard by JWT creation, but a
+// later REST user/preferences save defaults it to shared. Persist it at birth.
+func TestNewOIDCUserPersistsStandardProfileAcrossLogin(t *testing.T) {
+	directory := newMemoryDirectory()
+	syncer := NewUserSynchronizer(directory)
+	identity := ExternalIdentity{Issuer: "https://id.example.com", Subject: "new-member", Login: "member"}
+	for i := 0; i < 2; i++ {
+		user, err := syncer.Sync(context.Background(), identity)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if user.Attributes[idm.UserAttrProfile] != "standard" {
+			t.Fatalf("login %d: persisted profile = %q, want standard", i, user.Attributes[idm.UserAttrProfile])
+		}
+	}
+	if len(directory.byUUID) != 1 {
+		t.Fatal("repeat login duplicated user")
+	}
+}
+
+func TestOIDCLoginPreservesExistingProfile(t *testing.T) {
+	for _, profile := range []string{"standard", "shared", "admin", "anon", "custom"} {
+		t.Run(profile, func(t *testing.T) {
+			identity := ExternalIdentity{Issuer: "https://id.example.com", Subject: "existing-member", Login: "member"}
+			id, _ := SubjectUUID(identity.Issuer, identity.Subject)
+			attrs := map[string]string{"locks": "[\"disabled\"]"}
+			if profile != "" {
+				attrs[idm.UserAttrProfile] = profile
+			}
+			directory := newMemoryDirectory(&idm.User{Uuid: id, Login: identity.Login, Attributes: attrs})
+			user, err := NewUserSynchronizer(directory).Sync(context.Background(), identity)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if user.Attributes[idm.UserAttrProfile] != profile || user.Attributes["locks"] != attrs["locks"] {
+				t.Fatal("login changed existing profile or account restriction")
+			}
+		})
+	}
+}
+
+func TestOIDCLoginPersistsImplicitStandardProfile(t *testing.T) {
+	for _, attrs := range []map[string]string{{}, {idm.UserAttrProfile: ""}} {
+		identity := ExternalIdentity{Issuer: "https://id.example.com", Subject: "existing-member", Login: "member"}
+		id, _ := SubjectUUID(identity.Issuer, identity.Subject)
+		directory := newMemoryDirectory(&idm.User{Uuid: id, Login: identity.Login, Attributes: attrs})
+		user, err := NewUserSynchronizer(directory).Sync(context.Background(), identity)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if user.Attributes[idm.UserAttrProfile] != "standard" {
+			t.Fatal("implicit standard profile not persisted")
+		}
+	}
+}
