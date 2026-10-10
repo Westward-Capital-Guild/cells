@@ -78,6 +78,7 @@ export default class DevicePasswordPanel extends React.Component {
                 <TextField floatingLabelText="设备名称" hintText="例如：我的 Mac" value={label} maxLength={80}
                     onChange={e => this.update({label: e.target.value})} disabled={busy}/>
                 <RaisedButton label={busy ? '处理中…' : '创建设备密码'} primary disabled={busy || !username || !label.trim()} onClick={this.create}/>
+                {!busy && !label.trim() && <div role="status" style={{color: '#666', marginTop: 4}}>请先输入设备名称，例如“我的电脑”。</div>}
             </div>}
             <h4>设备密码管理</h4>
             {!devices.length && <p>{busy ? '正在加载…' : '尚未创建设备密码。'}</p>}
